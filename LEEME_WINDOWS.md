@@ -32,3 +32,9 @@ El inicio local usa el modo determinista y datos sintéticos. La ejecución de u
 ## Límites de comprobación
 
 Se comprobó la sintaxis PowerShell y se ejecutó el mismo inicio con PowerShell en Linux, incluyendo construcción Docker, semilla, API HTTP y conexión desde n8n. La inicialización se repitió sin sobrescribir datos. La rama específica de ACL/portapapeles de Windows necesita confirmación en tu PC.
+
+## Arreglo de "No se pudo comprobar la red de n8n"
+
+El iniciador antiguo usaba plantillas Docker con comillas que Windows PowerShell podia quitar. La version corregida solicita JSON y comprueba las propiedades dentro de PowerShell. Se reprodujo el fallo con argumentos Legacy y se comprobo el inicio completo corregido: primera conexion, reinicio Legacy y modo Standard.
+
+Descarga el ZIP actualizado y extraelo en otra carpeta. Ejecuta `INICIAR_TUTORIA.cmd` desde esa carpeta nueva. Las claves se reutilizan desde `%LOCALAPPDATA%\TutorIA\api.env`; los contenedores y volumenes existentes se conservan. No hace falta reinstalar n8n ni volver a importar sus workflows.

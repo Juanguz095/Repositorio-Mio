@@ -22,10 +22,13 @@ function Inspect-Docker([string[]]$Arguments) {
         return @{ Output=$output; Code=$LASTEXITCODE }
     } finally { $ErrorActionPreference = $previousPreference }
 }
+# Keep Docker templates free of embedded quotes: Windows PowerShell legacy mode strips them.
+# Parse the returned JSON in PowerShell instead of indexing quoted Go-template keys.
 function Ensure-Resource([string]$Kind, [string]$Name) {
-    $inspection = Inspect-Docker -Arguments @($Kind,'inspect','--format','{{index .Labels "pe.tutoria.local"}}',$Name)
+    $inspection = Inspect-Docker -Arguments @($Kind,'inspect','--format','{{json .Labels}}',$Name)
     if ($inspection.Code -eq 0) {
-        if ($inspection.Output -ne 'demo-api') { throw "El recurso $Name ya existe y no pertenece a este inicio local; se conservo intacto." }
+        $labels = ($inspection.Output -join "`n") | ConvertFrom-Json
+        if ($labels.'pe.tutoria.local' -ne 'demo-api') { throw "El recurso $Name ya existe y no pertenece a este inicio local; se conservo intacto." }
     } else {
         Run-Docker -Arguments @($Kind,'create','--label','pe.tutoria.local=demo-api',$Name) | Out-Null
     }
@@ -36,9 +39,10 @@ $editor = Inspect-Docker -Arguments @('inspect','--format','{{.Id}}','tutoria-n8
 if ($editor.Code -ne 0) { throw 'No se encuentra tutoria-n8n-local. Este inicio necesita el n8n que ya creaste.' }
 [IO.Directory]::CreateDirectory($StateDirectory) | Out-Null
 $envFile = Join-Path $StateDirectory 'api.env'
-$existingApi = Inspect-Docker -Arguments @('inspect','--format','{{index .Config.Labels "pe.tutoria.local"}}','tutoria-api-local')
+$existingApi = Inspect-Docker -Arguments @('inspect','--format','{{json .Config.Labels}}','tutoria-api-local')
 $hasApi = $existingApi.Code -eq 0
-if ($hasApi -and $existingApi.Output -ne 'demo-api') { throw 'El contenedor tutoria-api-local no pertenece a este inicio; se conservo intacto.' }
+$apiLabels = if ($hasApi) { ($existingApi.Output -join "`n") | ConvertFrom-Json } else { $null }
+if ($hasApi -and $apiLabels.'pe.tutoria.local' -ne 'demo-api') { throw 'El contenedor tutoria-api-local no pertenece a este inicio; se conservo intacto.' }
 if ($hasApi -and !(Test-Path $envFile)) { throw 'Existe una API pero falta su configuracion privada. Se conservo el contenedor para evitar cambiar sus claves.' }
 if (!(Test-Path $envFile)) {
     $handle = [IO.File]::Open($envFile, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
@@ -86,9 +90,10 @@ if (!$hasApi) {
 } else {
     Run-Docker -Arguments @('start','tutoria-api-local') | Out-Null
 }
-$attached = Inspect-Docker -Arguments @('inspect','--format','{{if index .NetworkSettings.Networks "tutoria-local"}}yes{{end}}','tutoria-n8n-local')
-if ($attached.Code -ne 0) { throw 'No se pudo comprobar la red de n8n.' }
-if ($attached.Output -ne 'yes') { Run-Docker -Arguments @('network','connect','tutoria-local','tutoria-n8n-local') | Out-Null }
+$attached = Inspect-Docker -Arguments @('inspect','--format','{{json .NetworkSettings.Networks}}','tutoria-n8n-local')
+if ($attached.Code -ne 0) { throw 'No se pudo comprobar la red de n8n. Comprueba que tutoria-n8n-local siga existiendo en Docker Desktop.' }
+$networks = ($attached.Output -join "`n") | ConvertFrom-Json
+if (@($networks.PSObject.Properties.Name) -notcontains 'tutoria-local') { Run-Docker -Arguments @('network','connect','tutoria-local','tutoria-n8n-local') | Out-Null }
 $healthy = $false
 for ($i=0; $i -lt 90; $i++) {
     try {
