@@ -1,0 +1,21 @@
+services:
+  api:
+    build:
+      context: .
+      secrets: [proxy_ca]
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:?Set OPERATOR_TOKEN}
+      REVIEWER_TOKEN: ${REVIEWER_TOKEN:?Set REVIEWER_TOKEN}
+      MOBILE_TOKEN: ${MOBILE_TOKEN:?Set MOBILE_TOKEN}
+    volumes: ["cases:/app/data"]
+  n8n:
+    image: n8nio/n8n:1.123.0
+    ports: ["127.0.0.1:5678:5678"]
+    volumes: ["n8n:/home/node/.n8n"]
+secrets:
+  proxy_ca:
+    file: ${CODEX_PROXY_CERT:-/etc/ssl/certs/ca-certificates.crt}
+volumes:
+  cases:
+  n8n:
