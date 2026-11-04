@@ -4,5 +4,6 @@ data/
 *.db
 .env
 .gradle/
+.kotlin/
 local.properties
 build/

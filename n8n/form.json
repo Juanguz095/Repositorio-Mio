@@ -1,0 +1,178 @@
+{
+  "name": "TutorIA — formulario académico autenticado",
+  "active": false,
+  "versionId": "72be163c-21eb-45af-92cc-e494ec370fef",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "tutoria-form",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "form-get",
+      "name": "Mostrar formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "tutoria-form-view"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!doctype html>\n<html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>TutorIA · Captura académica</title>\n<style>body{font:16px system-ui;background:#f4f7fb;color:#15243b;max-width:650px;margin:40px auto;padding:20px}form{background:white;padding:24px;border-radius:16px}label{display:block;margin-top:16px}input,select,button{box-sizing:border-box;width:100%;padding:12px;margin-top:6px;border:1px solid #a8b7ca;border-radius:8px;font:inherit}button{background:#184c8c;color:white;margin-top:24px}p{line-height:1.5}</style></head>\n<body><h1>Captura académica</h1><p>Demostración con datos sintéticos. El envío registra una observación; la publicación requiere revisión humana.</p>\n<form method=\"post\" action=\"\">\n<label>Identificador del envío <input name=\"event_id\" required maxlength=\"128\" pattern=\"[A-Za-z0-9_.:-]+\" placeholder=\"form-20242-001\"></label>\n<label>Código sintético del alumno <input name=\"alumno_id\" required maxlength=\"80\" placeholder=\"SYN-0900\"></label>\n<label>Periodo de observación <input type=\"number\" name=\"periodo\" required min=\"1\" step=\"1\" value=\"20242\"></label>\n<label>Asistencia (0–1) <input type=\"number\" name=\"asistencia\" min=\"0\" max=\"1\" step=\"0.01\"></label>\n<label>Promedio (0–20) <input type=\"number\" name=\"promedio\" min=\"0\" max=\"20\" step=\"0.1\"></label>\n<label>Créditos aprobados <input type=\"number\" name=\"creditos_aprobados\" min=\"0\" max=\"40\" step=\"1\"></label>\n<label>Matrícula en la fecha de observación <select name=\"matriculado\"><option value=\"\">Sin dato</option><option value=\"1\">Matriculado</option><option value=\"0\">No matriculado</option></select></label>\n<label>Pagos al día en la fecha de observación <select name=\"pagos_al_dia\"><option value=\"\">Sin dato o no aplica</option><option value=\"1\">Sí</option><option value=\"0\">No</option></select></label>\n<button type=\"submit\">Registrar observación</button></form></body></html>\n",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "html",
+      "name": "Formulario HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tutoria-form",
+        "authentication": "basicAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "form-post",
+      "name": "Recibir formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        260
+      ],
+      "webhookId": "tutoria-form-submit"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst numeric = ['periodo','asistencia','promedio','creditos_aprobados','matriculado','pagos_al_dia'];\nconst record = {event_id: String(body.event_id ?? ''), alumno_id: String(body.alumno_id ?? '')};\nfor (const name of numeric) {\n  const value = body[name];\n  record[name] = value === '' || value == null ? null : Number(value);\n  if (record[name] !== null && !Number.isFinite(record[name])) record[name] = String(value);\n}\nreturn [{json: record}];"
+      },
+      "id": "map",
+      "name": "Normalizar formulario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/forms/observations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "capture",
+      "name": "Guardar observación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode }}"
+        }
+      },
+      "id": "respond",
+      "name": "Confirmar captura",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        780,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Mostrar formulario": {
+      "main": [
+        [
+          {
+            "node": "Formulario HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recibir formulario": {
+      "main": [
+        [
+          {
+            "node": "Normalizar formulario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar formulario": {
+      "main": [
+        [
+          {
+            "node": "Guardar observación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar observación": {
+      "main": [
+        [
+          {
+            "node": "Confirmar captura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false
+  }
+}

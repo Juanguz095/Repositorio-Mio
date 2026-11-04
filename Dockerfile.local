@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN --mount=type=secret,id=proxy_ca \
+    if [ -f /run/secrets/proxy_ca ]; then \
+      PIP_CERT=/run/secrets/proxy_ca pip install --disable-pip-version-check --no-cache-dir -r requirements.txt; \
+    else \
+      pip install --disable-pip-version-check --no-cache-dir -r requirements.txt; \
+    fi
+COPY --chown=10001:10001 app app
+COPY --chown=10001:10001 scripts/local_api.py scripts/make_source_demo.py scripts/
+RUN useradd --uid 10001 --create-home tutor && mkdir data && chown tutor data
+USER tutor
+ENV TUTORIA_INIT_DEMO=1 TUTORIA_AGENT_MODE=rules
+EXPOSE 8000
+CMD ["python", "scripts/local_api.py"]

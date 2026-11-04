@@ -8,14 +8,51 @@ services:
       OPERATOR_TOKEN: ${OPERATOR_TOKEN:?Set OPERATOR_TOKEN}
       REVIEWER_TOKEN: ${REVIEWER_TOKEN:?Set REVIEWER_TOKEN}
       MOBILE_TOKEN: ${MOBILE_TOKEN:?Set MOBILE_TOKEN}
-    volumes: ["cases:/app/data"]
+      TUTORIA_AGENT_MODE: ${TUTORIA_AGENT_MODE:-rules}
+      TUTORIA_LLM_URL: http://ollama:11434
+      TUTORIA_LLM_MODEL: ${TUTORIA_LLM_MODEL:-qwen2.5:0.5b-instruct}
+      TUTORIA_SOURCE_DB: /app/data/raw/source-demo.db
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1},api,n8n,ollama"
+      no_proxy: "${NO_PROXY:-localhost,127.0.0.1},api,n8n,ollama"
+    volumes:
+      - cases:/app/data
+      - ./data/raw:/app/data/raw:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
   n8n:
     image: n8nio/n8n:1.123.0
     ports: ["127.0.0.1:5678:5678"]
     volumes: ["n8n:/home/node/.n8n"]
+    environment:
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1},api,n8n,ollama"
+      no_proxy: "${NO_PROXY:-localhost,127.0.0.1},api,n8n,ollama"
+      N8N_SECURE_COOKIE: "false" # Solo localhost; usar HTTPS para un servidor remoto.
+    depends_on:
+      api:
+        condition: service_healthy
+  ollama:
+    image: ollama/ollama:0.13.5
+    profiles: ["llm"]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    ports: ["127.0.0.1:11434:11434"]
+    environment:
+      SSL_CERT_FILE: /run/proxy-ca.pem
+      NO_PROXY: "localhost,127.0.0.1,ollama"
+      no_proxy: "localhost,127.0.0.1,ollama"
+    volumes:
+      - ollama:/root/.ollama
+      - ${CODEX_PROXY_CERT:-/etc/ssl/certs/ca-certificates.crt}:/run/proxy-ca.pem:ro
 secrets:
   proxy_ca:
     file: ${CODEX_PROXY_CERT:-/etc/ssl/certs/ca-certificates.crt}
 volumes:
   cases:
   n8n:
+  ollama:

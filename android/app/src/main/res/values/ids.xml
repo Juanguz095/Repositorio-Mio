@@ -1,0 +1,6 @@
+<resources>
+    <item name="base_url" type="id" />
+    <item name="mobile_token" type="id" />
+    <item name="refresh" type="id" />
+    <item name="case_rows" type="id" />
+</resources>

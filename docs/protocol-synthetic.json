@@ -1,0 +1,13 @@
+{
+  "dataset_kind": "synthetic",
+  "target_definition": "Resultado binario simulado; no representa una definición institucional de deserción.",
+  "prediction_horizon_periods": 1,
+  "feature_timing": "Todas las variables se simulan en la fecha de observación anterior al resultado.",
+  "enrollment_definition": "Indicador sintético de matrícula vigente en la fecha de observación.",
+  "payment_definition": "Indicador sintético de obligaciones aplicables al día; nulo significa sin dato o no aplica.",
+  "authorization_confirmed": false,
+  "min_train_rows": 100,
+  "min_test_rows": 50,
+  "min_group_rows": 20,
+  "threshold": 0.5
+}

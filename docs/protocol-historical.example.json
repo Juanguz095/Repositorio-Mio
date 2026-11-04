@@ -1,0 +1,13 @@
+{
+  "dataset_kind": "authorized_historical",
+  "target_definition": "REEMPLAZAR: definición acordada, horizonte, egreso, suspensión y exclusiones.",
+  "prediction_horizon_periods": 1,
+  "feature_timing": "REEMPLAZAR: cómo se verificó que cada variable existía antes del resultado.",
+  "enrollment_definition": "REEMPLAZAR: matrícula en la fecha de observación; no usar la matrícula futura que define el abandono.",
+  "payment_definition": "REEMPLAZAR: obligaciones realmente aplicables; no interpretar nulo como deuda.",
+  "authorization_confirmed": false,
+  "min_train_rows": 100,
+  "min_test_rows": 50,
+  "min_group_rows": 20,
+  "threshold": 0.5
+}
