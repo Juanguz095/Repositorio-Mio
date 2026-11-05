@@ -38,3 +38,7 @@ Se comprobó la sintaxis PowerShell y se ejecutó el mismo inicio con PowerShell
 El iniciador antiguo usaba plantillas Docker con comillas que Windows PowerShell podia quitar. La version corregida solicita JSON y comprueba las propiedades dentro de PowerShell. Se reprodujo el fallo con argumentos Legacy y se comprobo el inicio completo corregido: primera conexion, reinicio Legacy y modo Standard.
 
 Descarga el ZIP actualizado y extraelo en otra carpeta. Ejecuta `INICIAR_TUTORIA.cmd` desde esa carpeta nueva. Las claves se reutilizan desde `%LOCALAPPDATA%\TutorIA\api.env`; los contenedores y volumenes existentes se conservan. No hace falta reinstalar n8n ni volver a importar sus workflows.
+
+## Celular Android
+
+La APK de demostracion y las instrucciones USB estan en [mobile/LEEME_CELULAR.md](mobile/LEEME_CELULAR.md). La conexion requiere una PC con la API encendida y un cable USB de datos.
