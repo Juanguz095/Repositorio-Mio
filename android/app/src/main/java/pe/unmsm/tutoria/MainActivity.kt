@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
 import android.text.InputType
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -16,20 +18,49 @@ class MainActivity : Activity() {
     private lateinit var rows: LinearLayout
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24,24,24,24) }
-        base = EditText(this).apply { id = R.id.base_url; hint = "URL del servidor"; setText("http://10.0.2.2:8000") }
+        title = "TutorIA · ${packageManager.getPackageInfo(packageName, 0).versionName}"
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(padding, padding, padding, padding)
+            isFocusableInTouchMode = true
+        }
+        fun add(view: android.view.View) {
+            layout.addView(view, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+        }
+        base = EditText(this).apply {
+            id = R.id.base_url
+            hint = "http://127.0.0.1:8000"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            setSingleLine(true)
+            setText("http://127.0.0.1:8000")
+        }
         token = EditText(this).apply {
             id = R.id.mobile_token
             hint = "Token móvil (solo memoria)"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setSingleLine(true)
             isSaveEnabled = false
         }
         rows = LinearLayout(this).apply { id = R.id.case_rows; orientation = LinearLayout.VERTICAL }
-        layout.addView(TextView(this).apply { text = "TutorIA · datos sintéticos · casos aprobados" })
-        layout.addView(base); layout.addView(token)
-        layout.addView(Button(this).apply { id = R.id.refresh; text = "Actualizar"; setOnClickListener { load() } })
-        layout.addView(ScrollView(this).apply { addView(rows) })
-        setContentView(layout)
+        add(TextView(this).apply { text = "Datos sintéticos · casos aprobados" })
+        add(TextView(this).apply { id = R.id.base_url_label; text = "URL del servidor" })
+        add(base)
+        add(TextView(this).apply { text = "Por USB: mantén conectado el celular a la computadora." })
+        add(TextView(this).apply { text = "Token móvil" })
+        add(token)
+        add(Button(this).apply { id = R.id.refresh; text = "Actualizar"; setOnClickListener { load() } })
+        add(rows)
+        setContentView(ScrollView(this).apply {
+            isFillViewport = true
+            addView(layout, FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+        })
+        layout.requestFocus()
     }
     private fun request(path: String, done: (String) -> Unit) {
         val endpoint = base.text.toString().trimEnd('/') + path

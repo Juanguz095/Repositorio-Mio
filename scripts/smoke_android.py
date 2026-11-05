@@ -98,6 +98,7 @@ def main():
                 output=Path(args.output) if args.output else ROOT/'data/processed'/('android-ui-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ'))
                 output.mkdir(parents=True,exist_ok=False)
                 remote='/sdcard/Android/data/pe.unmsm.tutoria/files/'
+                adb('pull',remote+'tutoria-connection.png',str(output/'connection.png'))
                 adb('pull',remote+'tutoria-smoke.png',str(output/'screen.png'))
                 adb('pull',remote+'tutoria-smoke.xml',str(output/'hierarchy.xml'))
                 xml=redact((output/'hierarchy.xml').read_text())
@@ -105,7 +106,7 @@ def main():
                 (output/'instrumentation.txt').write_text(test)
                 (output/'report.json').write_text(json.dumps({'status':'passed','instrumented_tests':1,
                     'api_level':adb('shell','getprop','ro.build.version.sdk'),
-                    'checks':['pending_hidden','approved_only','risk_ordering','rejected_hidden','academic_detail','enrollment','payments','review_history'],
+                    'checks':['server_url_visible','usb_default_url','mobile_token_visible','pending_hidden','approved_only','risk_ordering','rejected_hidden','academic_detail','enrollment','payments','review_history'],
                     'data_kind':'synthetic','transport':'adb_reverse'},indent=2))
                 print('PASS: Android UI approval flow; evidence:',output,flush=True)
         finally:

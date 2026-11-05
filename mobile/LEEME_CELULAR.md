@@ -2,6 +2,8 @@
 
 La APK de esta carpeta es una compilacion de demostracion. Requiere Android 8 o posterior. La API sigue en tu computadora y la app recibe solo el token del rol movil. Las instrucciones usan USB para mantener la API ligada a localhost.
 
+La version 0.2 muestra `TutorIA · 0.2` en el titulo y una etiqueta permanente **URL del servidor**. La direccion USB `http://127.0.0.1:8000` ya viene escrita. Toda la pantalla permite desplazarse y los campos tienen alturas explicitas para que la configuracion sea accesible al cerrar el teclado.
+
 ## 1. Instalar la app
 
 Descarga `TutorIA-demo.apk` en el celular e instalala. Si lo descargaste en la computadora, copialo al celular por un cable USB de datos y abre el archivo desde Descargas/Archivos. Android puede pedir permiso para instalar desde ese navegador o administrador de archivos.
@@ -31,7 +33,7 @@ El celular debe aparecer como `device`. Si dice `unauthorized`, desbloquea el te
 ## 3. Configurar TutorIA
 
 1. Abre TutorIA en el celular.
-2. En URL del servidor escribe exactamente `http://127.0.0.1:8000`.
+2. Debajo de la etiqueta **URL del servidor**, verifica la direccion `http://127.0.0.1:8000`. No anadas `/health` ni `/cases`. Si el teclado tapa algun control, cierralo y desplaza la pantalla.
 3. Toca el campo **Token movil (solo memoria)** y dejalo enfocado, sin escribir nada.
 4. En la misma ventana de PowerShell de la carpeta `adb.exe`, ejecuta:
 

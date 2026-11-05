@@ -52,6 +52,15 @@ class ApprovalFlowTest {
             ?: error("Missing launch activity")
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         context.startActivity(launch)
+        assertEquals("http://127.0.0.1:8000", control("base_url").text)
+        assertEquals("URL del servidor", control("base_url_label").text)
+        assertTrue("Server URL must be visible", control("base_url").visibleBounds.height() > 0)
+        assertTrue("Mobile token must be visible", control("mobile_token").visibleBounds.height() > 0)
+        control("mobile_token").click()
+        device.pressBack()
+        assertTrue("Server label hidden after closing keyboard", control("base_url_label").visibleBounds.height() > 0)
+        val output = context.getExternalFilesDir(null) ?: error("Missing evidence directory")
+        assertTrue(device.takeScreenshot(File(output, "tutoria-connection.png")))
         control("base_url").text = baseUrl
         control("mobile_token").text = args.getString("mobileToken") ?: error("Missing temporary mobile token")
         control("refresh").click()
@@ -84,7 +93,6 @@ class ApprovalFlowTest {
         assertTrue(detail.text.contains(note))
         assertTrue(detail.text.contains("Asistencia"))
         assertTrue(detail.text.contains("Créditos aprobados"))
-        val output = context.getExternalFilesDir(null) ?: error("Missing evidence directory")
         assertTrue(device.takeScreenshot(File(output, "tutoria-smoke.png")))
         device.dumpWindowHierarchy(File(output, "tutoria-smoke.xml"))
     }

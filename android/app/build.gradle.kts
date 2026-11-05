@@ -7,7 +7,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    defaultConfig { applicationId = "pe.unmsm.tutoria"; minSdk = 26; targetSdk = 35; versionCode = 1; versionName = "0.1"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
+    defaultConfig { applicationId = "pe.unmsm.tutoria"; minSdk = 26; targetSdk = 35; versionCode = 2; versionName = "0.2"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
 }
 
 dependencies {

@@ -150,6 +150,8 @@ El informe distingue datos sintéticos de históricos declarados y no certifica 
 
 ## Android
 
+La APK movil 0.2 identifica su version en el titulo, muestra una etiqueta permanente para la URL del servidor y usa `http://127.0.0.1:8000` por defecto para la conexion USB mediante ADB reverse. La configuracion y los casos comparten una pantalla desplazable con alturas explicitas; la prueba instrumentada comprueba que la URL y el token sean visibles y que la etiqueta siga visible al cerrar el teclado.
+
 Requiere Gradle 8.9, SDK 35 y JDK 17 o compatible con Gradle/AGP. No se incluye wrapper binario. Define `ANDROID_HOME` apuntando al SDK y ejecuta:
 
 ```sh
